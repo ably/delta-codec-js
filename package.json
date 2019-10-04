@@ -5,7 +5,6 @@
   "dependencies": {
     "@ably/vcdiff-decoder": "^1.0.1",
     "@protobufjs/base64": "^1.1.2",
-    "@protobufjs/utf8": "^1.1.0",
-    "is-buffer": "^2.0.3"
+    "@protobufjs/utf8": "^1.1.0"
   }
 }
