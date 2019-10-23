@@ -20,7 +20,7 @@ The library is ES6 compliant. It supports the following platforms:
 We regression-test the library against a selection of those (which will change over time, but usually consists of the versions that are supported upstream, plus old versions of IE).
 
 
-## Use
+## General Use
 
 The `VcdiffDecoder` class is the entry point to the public API. It provides a stateful and stateless way of applying `vcdiff` deltas.
 
@@ -47,6 +47,55 @@ let result = codec.applyDelta(vcdiffDelta,
 `applyDelta` could be called as many times as needed. The `VcdiffDecoder` will automatically retain the last delta application result and use it as a base for the next delta application (it will also check whether the uniqie ids of the deltas, if any, match). Thus it allows applying an inifinte sequence of deltas.
 
 `result` would be of type `DeltaApplicationResult`. That is a convenience class that allows interpreting the result in various data formats - string, array, etc.
+
+## Common Use Cases
+
+### MQTT
+
+```
+var client = mqtt.connect(<url>, <options>);
+var textDecoder = new encoding.TextDecoder();
+var channelDecoder = new DeltaCodec.VcdiffDecoder();
+client.on('message', function (topic, payload) {
+	var message = textDecoder.decode(payload);
+	var data = message;
+	try {
+		if (DeltaCodec.VcdiffDecoder.isDelta(message, true)) {
+			data = channelDecoder.applyDelta(message, undefined, undefined, true).asUtf8String();
+		} else {
+			channelDecoder.setBase(message);
+		}
+	} catch(e) {
+		/* Delta decoder error */
+	}
+	
+	/* Process decoded data */
+	console.log(data);
+});
+```
+
+### SSE
+
+```
+var eventSource = new EventSource(<url>);
+var channelDecoder = new DeltaCodec.VcdiffDecoder();
+eventSource.onmessage = function(event) {
+	var message = JSON.parse(event.data);
+	var data = message.data;
+	try {
+		if (DeltaCodec.VcdiffDecoder.isDelta(data, true)) {
+			data = channelDecoder.applyDelta(data, undefined, undefined, true).asUtf8String();
+		} else {
+			channelDecoder.setBase(data);
+		}
+	} catch(e) {
+		/* Delta decoder error */
+	}
+
+	/* Process decoded data */
+	console.log(data);
+};
+```
 
 ## Support, feedback and troubleshooting
 
