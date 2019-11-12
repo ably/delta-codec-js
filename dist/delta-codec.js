@@ -145,7 +145,8 @@ VcdiffDecoder.applyDelta = function (delta, base, isDeltaBase64Encoded, isBaseBa
     throw new Error('The provided delta is not a valid VCDIFF delta');
   }
 
-  return decode(deltaAsUint8Array, isBaseBase64Encoded ? base64Decode(base) : toUint8Array(base));
+  var decoded = decode(deltaAsUint8Array, isBaseBase64Encoded ? base64Decode(base) : toUint8Array(base));
+  return new DeltaApplicationResult(decoded);
 };
 
 VcdiffDecoder.prototype.applyDelta = function (delta, deltaId, baseId, isBase64Encoded) {
