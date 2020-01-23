@@ -143,34 +143,7 @@ VcdiffDecoder.isBase64Delta = function (data) {
   return isDelta(data, base64Decode);
 };
 
-function applyDeltaStateless(delta, base, deltaToUint8Array, baseToUint8Array, isDelta) {
-  if (!delta) {
-    throw new Error('delta cannot be null');
-  }
-
-  if (!base) {
-    throw new Error('base cannot be null');
-  }
-
-  var deltaAsUint8Array = deltaToUint8Array(delta);
-
-  if (!isDelta(deltaAsUint8Array)) {
-    throw new Error('The provided delta is not a valid VCDIFF delta');
-  }
-
-  var decoded = decode(deltaAsUint8Array, baseToUint8Array(base));
-  return new DeltaApplicationResult(decoded);
-}
-
-VcdiffDecoder.applyDelta = function (delta, base) {
-  return applyDeltaStateless(delta, base, deltaToUint8Array, baseToUint8Array, VcdiffDecoder.isDelta);
-};
-
-VcdiffDecoder.applyBase64Delta = function (delta, base) {
-  return applyDeltaStateless(delta, base, base64Decode, base64Decode, VcdiffDecoder.isBase64Delta);
-};
-
-function applyDeltaStateful(delta, toUint8Array) {
+function applyDelta(delta, toUint8Array) {
   if (!this._base) {
     throw new Error('Uninitialized decoder - setBase() should be called first');
   }
@@ -192,11 +165,11 @@ VcdiffDecoder.prototype.applyDelta = function (delta) {
     throw new Error('The provided delta does not represent binary data');
   }
 
-  return applyDeltaStateful.call(this, delta, deltaToUint8Array);
+  return applyDelta.call(this, delta, deltaToUint8Array);
 };
 
 VcdiffDecoder.prototype.applyBase64Delta = function (delta) {
-  return applyDeltaStateful.call(this, delta, base64Decode);
+  return applyDelta.call(this, delta, base64Decode);
 };
 
 function setBase(newBase, toUint8Array) {
@@ -232,6 +205,10 @@ function isString(data) {
 }
 
 function base64Decode(str) {
+  if (typeof str !== 'string') {
+    throw new Error('Unsupported data type. Supported type: string.');
+  }
+
   var result = new Uint8Array(base64.length(str));
   base64.decode(str, result, 0);
   return result;
@@ -1362,30 +1339,30 @@ function applyDelta(applyDeltaFunction, delta, deltaId, baseId) {
     throw new Error('The provided baseId does not match the last preserved baseId in the sequence');
   }
 
-  var result = applyDeltaFunction(delta);
+  var result = applyDeltaFunction.call(this._decoder, delta);
   this._baseId = deltaId;
   return result;
 }
 
 CheckedVcdiffDecoder.prototype.applyDelta = function (delta, deltaId, baseId) {
-  return applyDelta(this._decoder.applyDelta, delta, deltaId, baseId);
+  return applyDelta.call(this, this._decoder.applyDelta, delta, deltaId, baseId);
 };
 
 CheckedVcdiffDecoder.prototype.applyBase64Delta = function (delta, deltaId, baseId) {
-  return applyDelta(this._decoder.applyBase64Delta, delta, deltaId, baseId);
+  return applyDelta.call(this, this._decoder.applyBase64Delta, delta, deltaId, baseId);
 };
 
 function setBase(setBaseFunction, newBase, newBaseId) {
-  setBaseFunction(newBase);
+  setBaseFunction.call(this._decoder, newBase);
   this._baseId = newBaseId;
 }
 
 CheckedVcdiffDecoder.prototype.setBase = function (newBase, newBaseId) {
-  setBase(this._decoder.setBase, newBase, newBaseId);
+  setBase.call(this, this._decoder.setBase, newBase, newBaseId);
 };
 
 CheckedVcdiffDecoder.prototype.setBase64Base = function (newBase, newBaseId) {
-  setBase(this._decoder.setBase64Base, newBase, newBaseId);
+  setBase.call(this, this._decoder.setBase64Base, newBase, newBaseId);
 };
 
 module.exports = CheckedVcdiffDecoder;

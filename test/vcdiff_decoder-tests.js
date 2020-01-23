@@ -10,8 +10,8 @@ module.exports = function(VcdiffDecoder, dataConverters) {
 		
 		describe('#applyBase64Delta', common.getApplyBase64DeltaTests(VcdiffDecoder));
 		
-		describe('#setBase', function() { });
+		describe('#setBase', common.getSetBaseTests(VcdiffDecoder, dataConverters));
 		
-		describe('#setBase64Base', function() { });
+		describe('#setBase64Base', common.getSetBase64BaseTests(VcdiffDecoder));
 	});
 };
