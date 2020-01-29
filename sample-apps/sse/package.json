@@ -1,0 +1,8 @@
+{
+  "name": "sample-app-sse",
+  "version": "1.0.0",
+  "main": "producer.js",
+  "dependencies": {
+    "ably": "^1.1.24"
+  }
+}
