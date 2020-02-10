@@ -10,7 +10,6 @@ const client = mqtt.connect('mqtts:mqtt.ably.io', options);
 const channelName = 'sample-app-mqtt';
 
 client.on('connect', () => {
-	/* Publisher */
 	const binaryData = {
 		base: Uint8Array.from([76, 111, 114, 101, 109, 32, 105, 112, 115, 117, 109, 32, 100, 111, 108, 111, 114, 32, 115, 105, 116, 32, 97, 109, 101, 116]),
 		delta: Uint8Array.from([214, 195, 196, 0, 0, 1, 26, 0, 40, 56, 0, 30, 4, 1, 44, 32, 99, 111, 110, 115, 101, 99, 116, 101, 116, 117, 114, 32, 97, 100, 105, 112, 105, 115, 99, 105, 110, 103, 32, 101, 108, 105, 116, 46, 19, 26, 1, 30, 0]),

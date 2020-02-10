@@ -10,7 +10,6 @@ const client = mqtt.connect('mqtts:mqtt.ably.io', options);
 const channelName = 'sample-app-mqtt';
 
 client.on('connect', () => {
-	/* Publisher */
 	const data = {
 		foo: 'bar',
 		count: 1,

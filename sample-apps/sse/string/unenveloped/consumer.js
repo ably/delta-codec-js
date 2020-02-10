@@ -15,8 +15,8 @@
                 channelDecoder.setBase(data);
             }
         } catch(e) {
-            console.log(e);
             /* Delta decoder error */
+            console.log(e);
         }
     
         /* Process decoded data */

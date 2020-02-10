@@ -16,6 +16,7 @@
             }
         } catch(e) {
             /* Delta decoder error */
+            console.log(e);
         }
     
         /* Process decoded data */

@@ -22,6 +22,7 @@ client.on('message', (_, payload) => {
 		}
 	} catch(e) {
 		/* Delta decoder error */
+		console.log(e);
 	}
 	
 	/* Process decoded data */
