@@ -2,6 +2,9 @@
   "name": "delta-codec",
   "version": "1.0.0",
   "main": "lib/index.js",
+  "scripts": {
+    "test": "grunt test:all"
+  },
   "dependencies": {
     "@ably/vcdiff-decoder": "^1.0.1",
     "@protobufjs/base64": "^1.1.2",

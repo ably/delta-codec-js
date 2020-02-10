@@ -83,7 +83,8 @@ module.exports = function (grunt) {
 				singleRun: true
 			},
 			local: {
-				reporters: ['progress', 'mocha']
+				reporters: ['progress', 'mocha'],
+				browsers: ['Firefox']
 			},
 			remote: {
 				browserStack: {
