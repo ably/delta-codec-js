@@ -23,7 +23,7 @@ We regression-test the library against a selection of those (which will change o
 
 ## General Use
 
-The `VcdiffDecoder` class is the entry point to the public API. It provides a statefull way of applying a stream of `vcdiff` deltas.
+The `VcdiffDecoder` class is an entry point to the public API. It provides a stateful way of applying a stream of `vcdiff` deltas.
 
 `VcdiffDecoder` can do the necessary bookkeeping in the scenario where a number of successive deltas/patches have to be applied where each of them represents the difference to the previous one (e.g. a sequence of messages each of which represents a set of mutations to a given JavaScript object; i.e. sending only the mutations of an object instead the full object each time).
 
@@ -39,7 +39,7 @@ Once the decoder is initialized like this it could be used to apply a stream of 
 ```
 let result = decoder.applyDelta(vcdiffDelta);
 ```
-`applyDelta` could be called as many times as needed. The `VcdiffDecoder` will automatically retain the last delta application result and use it as a base for the next delta application (it will also check whether the unique ids of the deltas, if any, match). Thus it allows applying an infinite sequence of deltas.
+`applyDelta` could be called as many times as needed. The `VcdiffDecoder` will automatically retain the last delta application result and use it as a base for the next delta application. Thus it allows applying an infinite sequence of deltas.
 
 `result` would be of type `DeltaApplicationResult`. That is a convenience class that allows interpreting the result in various data formats - string, array, etc.
 
@@ -63,20 +63,20 @@ const channelName = 'sample-app-mqtt';
 const channelDecoder = new VcdiffDecoder();
 
 client.on('message', (_, payload) => {
-	let data = payload;
+    let data = payload;
 
-	try {
-		if (VcdiffDecoder.isDelta(data)) {
-			data = channelDecoder.applyDelta(data).asUint8Array();
-		} else {
-			channelDecoder.setBase(data);
-		}
-	} catch(e) {
-		/* Delta decoder error */
-	}
-	
-	/* Process decoded data */
-	console.log(data);
+    try {
+        if (VcdiffDecoder.isDelta(data)) {
+            data = channelDecoder.applyDelta(data).asUint8Array();
+        } else {
+            channelDecoder.setBase(data);
+        }
+    } catch(e) {
+        /* Delta decoder error */
+    }
+
+    /* Process decoded data */
+    console.log(data);
 });
 ```
 
@@ -109,7 +109,7 @@ client.on('message', (_, payload) => {
 
 Please visit http://support.ably.io/ for access to our knowledgebase and to ask for any assistance.
 
-You can also view the [community reported GitHub issues](https://github.com/ably/ably-js/issues).
+You can also view the [community reported GitHub issues](https://github.com/ably/delta-codec-js/issues).
 
 To see what has changed in recent versions, see the [CHANGELOG](CHANGELOG.md).
 

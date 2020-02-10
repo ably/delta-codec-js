@@ -6,8 +6,10 @@
     const channelDecoder = new DeltaCodec.CheckedVcdiffDecoder();
     
     eventSource.onmessage = (event) => {
+        /* event.data is JSON-encoded Ably Message (see https://www.ably.io/documentation/realtime/types#message) */
         const message = JSON.parse(event.data);
-        let { id, data, extras } = message;
+        const { id, extras } = message;
+        let { data } = message;
 
         try {
             if (extras && extras.delta) {
@@ -17,6 +19,7 @@
             }
         } catch(e) {
             /* Delta decoder error */
+            console.log(e);
         }
     
         /* Process decoded data */
