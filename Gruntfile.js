@@ -22,11 +22,21 @@ module.exports = function (grunt) {
 							test: /\.js$/,
 							include: [
 								path.resolve(__dirname, 'lib'),
+								path.resolve(__dirname, 'node_modules/@ably/vcdiff-decoder')
 							],
 							use: {
 								loader: 'babel-loader',
 								options: {
-									presets: ['@babel/preset-env']
+									presets: [
+										[
+											'@babel/preset-env',
+											{
+												'corejs': 3,
+												'useBuiltIns': 'usage',
+												'modules': 'commonjs'
+											}
+										]
+									]
 								}
 							}
 						}
@@ -62,11 +72,19 @@ module.exports = function (grunt) {
 					module: {
 						rules: [
 							{
+								exclude: /node_modules/,
 								use: {
 									loader: 'babel-loader',
 									options: {
 										presets: [
-											'@babel/preset-env'
+											[
+												'@babel/preset-env',
+												{
+													'corejs': 3,
+													'useBuiltIns': 'usage',
+													'modules': 'commonjs'
+												}
+											]
 										]
 									}
 								}
