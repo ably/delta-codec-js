@@ -1,4 +1,5 @@
 # JavaScript Codec Library for the VCDIFF Delta Format
+[![Build Status](https://travis-ci.org/ably/delta-codec-js.svg?branch=master)](https://travis-ci.org/ably/delta-codec-js)
 
 ## Overview
 
@@ -121,6 +122,12 @@ To see what has changed in recent versions, see the [CHANGELOG](CHANGELOG.md).
 
 - Make sure the tests are passing in ci for the branch you're building
 - Update the CHANGELOG.md with any customer-affecting changes since the last release
+
+## Credits
+
+Automated browser testing supported by
+
+[<img src="./resources/Browserstack-logo@2x.png" width="200px"></img>](https://www.browserstack.com/)
 
 ## License
 
