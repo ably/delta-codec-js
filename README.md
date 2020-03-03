@@ -55,7 +55,9 @@ There are `base64` flavors of `setBase` and `applyDelta` that would accept `base
 
 ## Common Use Cases
 
-### MQTT with Binary Payload
+### Ably Related
+
+#### MQTT with Binary Payload
 
 ```
 const client = mqtt.connect(<url>, <options>);
@@ -72,6 +74,7 @@ client.on('message', (_, payload) => {
             channelDecoder.setBase(data);
         }
     } catch(e) {
+        console.log(e);
         /* Delta decoder error */
     }
 
@@ -80,7 +83,7 @@ client.on('message', (_, payload) => {
 });
 ```
 
-### SSE with String Payload
+#### SSE with String Payload
 
 ```
     const eventSource = new EventSource(<url>);
@@ -104,6 +107,36 @@ client.on('message', (_, payload) => {
         console.log(data);
     };
 ```
+
+### Non Ably Related
+
+#### Object Mutations Store/Retrieve
+
+VCDiff encoded deltas could be used to efficiently store the history of the mutations of a given object. Instead of preserving full copies of the object at various points of time in its existence one could preserve just the differences between two successive copies, i.e. the delta. The following function can then be used to restore the full copies of the object with the help of `delta-codec-js` lib:
+
+```
+    function getObjectMutationsHistory(baseObject, 
+                                objectMutationsDeltas /*array of vcdiff deltas computed between each two successive states of the base object with deltas being computed on JSON serialized object */) {
+
+        const stateDecoder = new DeltaCodec.VcdiffDecoder();
+
+        stateDecoder.setBase(baseObject);
+        let objectMutations = [];
+        
+        objectMutationsDeltas.forEach(state => {
+            try {
+                let serialzedObject = stateDecoder.applyDelta(state).asUtf8String();
+                objectMutations.push(JSON.parse(serialzedObject));
+            } catch (e) {
+                console.log(e);
+                /* Delta decoder error */
+            }
+        });
+        
+        return objectMutations;
+    }
+```
+
 
 ## Support, feedback and troubleshooting
 
