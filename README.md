@@ -111,10 +111,8 @@ Absolute values are sent to us as strings, ready to use. Deltas are sent to us a
 const url = 'https://realtime.ably.io/sse?v=1.1&key=' + API_KEY + '&channels=' + CHANNEL_NAME + '&enveloped=false';
 const eventSource = new EventSource(url);
 const decoder = new DeltaCodec.VcdiffDecoder();
-
 eventSource.onmessage = (event) => {
     let stringData = event.data;
-
     try {
         if (VcdiffDecoder.isBase64Delta(stringData)) {
             stringData = decoder.applyBase64Delta(stringData).asUtf8String();
@@ -124,7 +122,6 @@ eventSource.onmessage = (event) => {
     } catch(e) {
         console.log(e); // TODO: Handle error.
     }
-
     console.log(data); // TODO: Process the received value.
 };
 ```
@@ -138,10 +135,8 @@ We need to 'sniff' each inbound payload to identify whether it is an absolute va
 const client = mqtt.connect(url, options);
 const channelName = 'sample-app-mqtt';
 const decoder = new VcdiffDecoder();
-
 client.on('message', (_, payload) => {
     let data = payload;
-
     try {
         if (VcdiffDecoder.isDelta(data)) {
             data = decoder.applyDelta(data).asUint8Array();
@@ -151,7 +146,6 @@ client.on('message', (_, payload) => {
     } catch(e) {
         console.log(e); // TODO: Handle error.
     }
-
     console.log(data); // TODO: Process the received value.
 });
 ```
