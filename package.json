@@ -1,12 +1,20 @@
 {
-  "name": "delta-codec",
+  "name": "@ably/delta-codec",
   "version": "1.0.0",
+  "description": "Utility library supporting those consuming delta streams from Ably without using the official JavaScript client library (e.g. MQTT and SSE applications).",
   "main": "lib/index.js",
   "scripts": {
     "test": "grunt test:all"
   },
+  "repository": "ably/delta-codec-js",
+  "author": "Ably Real-time Ltd <support@ably.io>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ably/delta-codec-js/issues"
+  },
+  "homepage": "https://ably.io/",
   "dependencies": {
-    "@ably/vcdiff-decoder": "^1.0.1",
+    "@ably/vcdiff-decoder": "^1.0.2",
     "@protobufjs/base64": "^1.1.2",
     "@protobufjs/utf8": "^1.1.0"
   },
