@@ -149,3 +149,34 @@ client.on('message', (_, payload) => {
     console.log(data); // TODO: Process the received value.
 });
 ```
+
+## Contributing
+
+### Building
+
+You can trigger a build using Webpack with:
+
+    npm run grunt -- build
+
+which creates `delta-codec.js` and `delta-codec.min.js` in the `dist` folder.
+
+### Testing
+
+To run tests in all runtimes (Node and browsers):
+
+    npm test
+
+To run tests on a single runtime:
+
+- Node (very quick): `npm run grunt -- test:node`
+- Local browser (Firefox): `npm run grunt -- test:browser:local`
+- Remote browsers (Safari, Firefox, Chrome, IE, Edge, Chrome Mobile and Mobile Safari): `npm run grunt -- test:browser:remote`
+
+**Known Issue:**
+When testing in a local browser either using `npm run grunt -- test:browser:local` or indirectly by using `npm test` on macOS, you may see a "segmentation fault". Launch the Console app to find the associated crash reports, of which there will be too. More information in [issue #7](https://github.com/ably/delta-codec-js/issues/7).
+
+Remote browser testing supported by
+
+[<img src="./resources/Browserstack-logo@2x.png" width="200px"></img>](https://www.browserstack.com/)
+
+for which you will need to configure environment variables for `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESSKEY`.
