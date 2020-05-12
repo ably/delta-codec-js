@@ -302,7 +302,7 @@ function baseToUint8Array(data) {
 }
 
 function decode(delta, source) {
-  return vcdiff.decodeSync(delta, source);
+  return vcdiff.decode(delta, source);
 }
 
 module.exports = VcdiffDecoder;
@@ -540,7 +540,7 @@ var store = __webpack_require__(14);
 (module.exports = function (key, value) {
   return store[key] || (store[key] = value !== undefined ? value : {});
 })('versions', []).push({
-  version: '3.6.4',
+  version: '3.6.5',
   mode: IS_PURE ? 'pure' : 'global',
   copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
 });
@@ -3752,25 +3752,22 @@ exportTypedArrayMethod('toString', arrayToString, IS_NOT_ARRAY_METHOD);
 "use strict";
 
 
-var errors = __webpack_require__(125);
-
-var VCDiff = __webpack_require__(132);
+var VCDiff = __webpack_require__(125);
 /**
- *
- * @param delta {Uint8Array}
- * @param source {Uint8Array}
+ * Vcdiff decode, applying delta to source and returning the result.
+ * 
+ * @param delta {Uint8Array} The Vcdiff format diff/patch to apply to source.
+ * @param source {Uint8Array} The source to apply the delta diff/patch to.
+ * @returns {Uint8Array} The result of applying delta to source.
  */
 
 
-function decodeSync(delta, source) {
+function decode(delta, source) {
   var vcdiff = new VCDiff(delta, source);
   return vcdiff.decode();
 }
 
-function decode(delta, buffer) {}
-
 module.exports = {
-  decodeSync: decodeSync,
   decode: decode
 };
 
@@ -3780,202 +3777,14 @@ module.exports = {
 
 "use strict";
 
-/**
- * Takes in array of names of errors and returns an object mapping those names to error functions that take in one parameter that is used as the message for the error
- * @param names {[]}
- * @returns {{name1: function(message),...}}
- * @constructor
- */
-
-__webpack_require__(126);
-
-__webpack_require__(128);
-
-__webpack_require__(129);
-
-__webpack_require__(130);
-
-function CustomErrors(names) {
-  var errors = {};
-  names.forEach(function (name) {
-    var CustomError = function CustomError(message) {
-      var temp = Error.apply(this, arguments);
-      temp.name = this.name = name;
-      this.stack = temp.stack;
-      this.message = temp.message;
-      this.name = name;
-      this.message = message;
-    };
-
-    CustomError.prototype = Object.create(Error.prototype, {
-      constructor: {
-        value: CustomError,
-        writable: true,
-        configurable: true
-      }
-    });
-    errors[name] = CustomError;
-  });
-  return errors;
-}
-
-module.exports = CustomErrors(['NotImplemented', 'InvalidDelta']);
-
-/***/ }),
-/* 126 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var $ = __webpack_require__(48);
-var forEach = __webpack_require__(127);
-
-// `Array.prototype.forEach` method
-// https://tc39.github.io/ecma262/#sec-array.prototype.foreach
-$({ target: 'Array', proto: true, forced: [].forEach != forEach }, {
-  forEach: forEach
-});
-
-
-/***/ }),
-/* 127 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var $forEach = __webpack_require__(92).forEach;
-var arrayMethodIsStrict = __webpack_require__(110);
-var arrayMethodUsesToLength = __webpack_require__(111);
-
-var STRICT_METHOD = arrayMethodIsStrict('forEach');
-var USES_TO_LENGTH = arrayMethodUsesToLength('forEach');
-
-// `Array.prototype.forEach` method implementation
-// https://tc39.github.io/ecma262/#sec-array.prototype.foreach
-module.exports = (!STRICT_METHOD || !USES_TO_LENGTH) ? function forEach(callbackfn /* , thisArg */) {
-  return $forEach(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
-} : [].forEach;
-
-
-/***/ }),
-/* 128 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var DESCRIPTORS = __webpack_require__(17);
-var defineProperty = __webpack_require__(18).f;
-
-var FunctionPrototype = Function.prototype;
-var FunctionPrototypeToString = FunctionPrototype.toString;
-var nameRE = /^\s*function ([^ (]*)/;
-var NAME = 'name';
-
-// Function instances `.name` property
-// https://tc39.github.io/ecma262/#sec-function-instances-name
-if (DESCRIPTORS && !(NAME in FunctionPrototype)) {
-  defineProperty(FunctionPrototype, NAME, {
-    configurable: true,
-    get: function () {
-      try {
-        return FunctionPrototypeToString.call(this).match(nameRE)[1];
-      } catch (error) {
-        return '';
-      }
-    }
-  });
-}
-
-
-/***/ }),
-/* 129 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var $ = __webpack_require__(48);
-var DESCRIPTORS = __webpack_require__(17);
-var create = __webpack_require__(29);
-
-// `Object.create` method
-// https://tc39.github.io/ecma262/#sec-object.create
-$({ target: 'Object', stat: true, sham: !DESCRIPTORS }, {
-  create: create
-});
-
-
-/***/ }),
-/* 130 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global = __webpack_require__(10);
-var DOMIterables = __webpack_require__(131);
-var forEach = __webpack_require__(127);
-var createNonEnumerableProperty = __webpack_require__(16);
-
-for (var COLLECTION_NAME in DOMIterables) {
-  var Collection = global[COLLECTION_NAME];
-  var CollectionPrototype = Collection && Collection.prototype;
-  // some Chrome versions have non-configurable methods on DOMTokenList
-  if (CollectionPrototype && CollectionPrototype.forEach !== forEach) try {
-    createNonEnumerableProperty(CollectionPrototype, 'forEach', forEach);
-  } catch (error) {
-    CollectionPrototype.forEach = forEach;
-  }
-}
-
-
-/***/ }),
-/* 131 */
-/***/ (function(module, exports) {
-
-// iterable DOM collections
-// flag - `iterable` interface - 'entries', 'keys', 'values', 'forEach' methods
-module.exports = {
-  CSSRuleList: 0,
-  CSSStyleDeclaration: 0,
-  CSSValueList: 0,
-  ClientRectList: 0,
-  DOMRectList: 0,
-  DOMStringList: 0,
-  DOMTokenList: 1,
-  DataTransferItemList: 0,
-  FileList: 0,
-  HTMLAllCollection: 0,
-  HTMLCollection: 0,
-  HTMLFormElement: 0,
-  HTMLSelectElement: 0,
-  MediaList: 0,
-  MimeTypeArray: 0,
-  NamedNodeMap: 0,
-  NodeList: 1,
-  PaintRequestList: 0,
-  Plugin: 0,
-  PluginArray: 0,
-  SVGLengthList: 0,
-  SVGNumberList: 0,
-  SVGPathSegList: 0,
-  SVGPointList: 0,
-  SVGStringList: 0,
-  SVGTransformList: 0,
-  SourceBufferList: 0,
-  StyleSheetList: 0,
-  TextTrackCueList: 0,
-  TextTrackList: 0,
-  TouchList: 0
-};
-
-
-/***/ }),
-/* 132 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
 
 __webpack_require__(126);
 
 __webpack_require__(2);
 
-__webpack_require__(133);
+__webpack_require__(128);
 
-__webpack_require__(134);
+__webpack_require__(129);
 
 __webpack_require__(74);
 
@@ -4029,9 +3838,9 @@ __webpack_require__(122);
 
 __webpack_require__(123);
 
-__webpack_require__(130);
+__webpack_require__(134);
 
-var errors = __webpack_require__(125);
+var errors = __webpack_require__(136);
 
 var TypedArray = __webpack_require__(139);
 
@@ -4202,7 +4011,43 @@ Delta.prototype.getNextAddressByte = function () {
 module.exports = VCDiff;
 
 /***/ }),
-/* 133 */
+/* 126 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $ = __webpack_require__(48);
+var forEach = __webpack_require__(127);
+
+// `Array.prototype.forEach` method
+// https://tc39.github.io/ecma262/#sec-array.prototype.foreach
+$({ target: 'Array', proto: true, forced: [].forEach != forEach }, {
+  forEach: forEach
+});
+
+
+/***/ }),
+/* 127 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var $forEach = __webpack_require__(92).forEach;
+var arrayMethodIsStrict = __webpack_require__(110);
+var arrayMethodUsesToLength = __webpack_require__(111);
+
+var STRICT_METHOD = arrayMethodIsStrict('forEach');
+var USES_TO_LENGTH = arrayMethodUsesToLength('forEach');
+
+// `Array.prototype.forEach` method implementation
+// https://tc39.github.io/ecma262/#sec-array.prototype.foreach
+module.exports = (!STRICT_METHOD || !USES_TO_LENGTH) ? function forEach(callbackfn /* , thisArg */) {
+  return $forEach(this, callbackfn, arguments.length > 1 ? arguments[1] : undefined);
+} : [].forEach;
+
+
+/***/ }),
+/* 128 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4225,7 +4070,7 @@ $({ target: 'Array', proto: true, forced: !STRICT_METHOD || !USES_TO_LENGTH }, {
 
 
 /***/ }),
-/* 134 */
+/* 129 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4236,9 +4081,9 @@ var isArray = __webpack_require__(94);
 var toAbsoluteIndex = __webpack_require__(36);
 var toLength = __webpack_require__(34);
 var toIndexedObject = __webpack_require__(3);
-var createProperty = __webpack_require__(135);
+var createProperty = __webpack_require__(130);
 var wellKnownSymbol = __webpack_require__(9);
-var arrayMethodHasSpeciesSupport = __webpack_require__(136);
+var arrayMethodHasSpeciesSupport = __webpack_require__(131);
 var arrayMethodUsesToLength = __webpack_require__(111);
 
 var HAS_SPECIES_SUPPORT = arrayMethodHasSpeciesSupport('slice');
@@ -4281,7 +4126,7 @@ $({ target: 'Array', proto: true, forced: !HAS_SPECIES_SUPPORT || !USES_TO_LENGT
 
 
 /***/ }),
-/* 135 */
+/* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -4298,12 +4143,12 @@ module.exports = function (object, key, value) {
 
 
 /***/ }),
-/* 136 */
+/* 131 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var fails = __webpack_require__(5);
 var wellKnownSymbol = __webpack_require__(9);
-var V8_VERSION = __webpack_require__(137);
+var V8_VERSION = __webpack_require__(132);
 
 var SPECIES = wellKnownSymbol('species');
 
@@ -4323,11 +4168,11 @@ module.exports = function (METHOD_NAME) {
 
 
 /***/ }),
-/* 137 */
+/* 132 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(10);
-var userAgent = __webpack_require__(138);
+var userAgent = __webpack_require__(133);
 
 var process = global.process;
 var versions = process && process.versions;
@@ -4349,12 +4194,164 @@ module.exports = version && +version;
 
 
 /***/ }),
-/* 138 */
+/* 133 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var getBuiltIn = __webpack_require__(40);
 
 module.exports = getBuiltIn('navigator', 'userAgent') || '';
+
+
+/***/ }),
+/* 134 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var global = __webpack_require__(10);
+var DOMIterables = __webpack_require__(135);
+var forEach = __webpack_require__(127);
+var createNonEnumerableProperty = __webpack_require__(16);
+
+for (var COLLECTION_NAME in DOMIterables) {
+  var Collection = global[COLLECTION_NAME];
+  var CollectionPrototype = Collection && Collection.prototype;
+  // some Chrome versions have non-configurable methods on DOMTokenList
+  if (CollectionPrototype && CollectionPrototype.forEach !== forEach) try {
+    createNonEnumerableProperty(CollectionPrototype, 'forEach', forEach);
+  } catch (error) {
+    CollectionPrototype.forEach = forEach;
+  }
+}
+
+
+/***/ }),
+/* 135 */
+/***/ (function(module, exports) {
+
+// iterable DOM collections
+// flag - `iterable` interface - 'entries', 'keys', 'values', 'forEach' methods
+module.exports = {
+  CSSRuleList: 0,
+  CSSStyleDeclaration: 0,
+  CSSValueList: 0,
+  ClientRectList: 0,
+  DOMRectList: 0,
+  DOMStringList: 0,
+  DOMTokenList: 1,
+  DataTransferItemList: 0,
+  FileList: 0,
+  HTMLAllCollection: 0,
+  HTMLCollection: 0,
+  HTMLFormElement: 0,
+  HTMLSelectElement: 0,
+  MediaList: 0,
+  MimeTypeArray: 0,
+  NamedNodeMap: 0,
+  NodeList: 1,
+  PaintRequestList: 0,
+  Plugin: 0,
+  PluginArray: 0,
+  SVGLengthList: 0,
+  SVGNumberList: 0,
+  SVGPathSegList: 0,
+  SVGPointList: 0,
+  SVGStringList: 0,
+  SVGTransformList: 0,
+  SourceBufferList: 0,
+  StyleSheetList: 0,
+  TextTrackCueList: 0,
+  TextTrackList: 0,
+  TouchList: 0
+};
+
+
+/***/ }),
+/* 136 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ * Takes in array of names of errors and returns an object mapping those names to error functions that take in one parameter that is used as the message for the error
+ * @param names {[]}
+ * @returns {{name1: function(message),...}}
+ * @constructor
+ */
+
+__webpack_require__(126);
+
+__webpack_require__(137);
+
+__webpack_require__(138);
+
+__webpack_require__(134);
+
+function CustomErrors(names) {
+  var errors = {};
+  names.forEach(function (name) {
+    var CustomError = function CustomError(message) {
+      var temp = Error.apply(this, arguments);
+      temp.name = this.name = name;
+      this.stack = temp.stack;
+      this.message = temp.message;
+      this.name = name;
+      this.message = message;
+    };
+
+    CustomError.prototype = Object.create(Error.prototype, {
+      constructor: {
+        value: CustomError,
+        writable: true,
+        configurable: true
+      }
+    });
+    errors[name] = CustomError;
+  });
+  return errors;
+}
+
+module.exports = CustomErrors(['NotImplemented', 'InvalidDelta']);
+
+/***/ }),
+/* 137 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DESCRIPTORS = __webpack_require__(17);
+var defineProperty = __webpack_require__(18).f;
+
+var FunctionPrototype = Function.prototype;
+var FunctionPrototypeToString = FunctionPrototype.toString;
+var nameRE = /^\s*function ([^ (]*)/;
+var NAME = 'name';
+
+// Function instances `.name` property
+// https://tc39.github.io/ecma262/#sec-function-instances-name
+if (DESCRIPTORS && !(NAME in FunctionPrototype)) {
+  defineProperty(FunctionPrototype, NAME, {
+    configurable: true,
+    get: function () {
+      try {
+        return FunctionPrototypeToString.call(this).match(nameRE)[1];
+      } catch (error) {
+        return '';
+      }
+    }
+  });
+}
+
+
+/***/ }),
+/* 138 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var $ = __webpack_require__(48);
+var DESCRIPTORS = __webpack_require__(17);
+var create = __webpack_require__(29);
+
+// `Object.create` method
+// https://tc39.github.io/ecma262/#sec-object.create
+$({ target: 'Object', stat: true, sham: !DESCRIPTORS }, {
+  create: create
+});
 
 
 /***/ }),
@@ -4446,7 +4443,7 @@ __webpack_require__(123);
 
 __webpack_require__(157);
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function uint8ArrayToString(uintArray) {
   var encodedString = String.fromCharCode.apply(null, uintArray);
@@ -5010,7 +5007,7 @@ defineWellKnownSymbol('iterator');
 
 var $ = __webpack_require__(48);
 var $filter = __webpack_require__(92).filter;
-var arrayMethodHasSpeciesSupport = __webpack_require__(136);
+var arrayMethodHasSpeciesSupport = __webpack_require__(131);
 var arrayMethodUsesToLength = __webpack_require__(111);
 
 var HAS_SPECIES_SUPPORT = arrayMethodHasSpeciesSupport('filter');
@@ -5221,7 +5218,7 @@ createTypedArrayConstructor('Uint32', function (init) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(10);
-var DOMIterables = __webpack_require__(131);
+var DOMIterables = __webpack_require__(135);
 var ArrayIteratorMethods = __webpack_require__(2);
 var createNonEnumerableProperty = __webpack_require__(16);
 var wellKnownSymbol = __webpack_require__(9);
@@ -5298,9 +5295,9 @@ module.exports = integer;
 "use strict";
 
 
-__webpack_require__(134);
+__webpack_require__(129);
 
-var errors = __webpack_require__(125);
+var errors = __webpack_require__(136);
 
 var deserializeInteger = __webpack_require__(158);
 
@@ -5549,7 +5546,7 @@ module.exports = tokenizeInstructions;
 "use strict";
 
 
-__webpack_require__(128);
+__webpack_require__(137);
 
 var deserializeInteger = __webpack_require__(158);
 

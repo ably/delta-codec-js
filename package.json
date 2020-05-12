@@ -1,6 +1,6 @@
 {
   "name": "@ably/delta-codec",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Utility library supporting those consuming delta streams from Ably without using the official JavaScript client library (e.g. MQTT and SSE applications).",
   "main": "lib/index.js",
   "scripts": {
