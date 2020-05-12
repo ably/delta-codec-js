@@ -4,11 +4,25 @@ const path = require('path');
 
 module.exports = function (grunt) {
 
+	grunt.loadNpmTasks('grunt-bump');
 	grunt.loadNpmTasks('grunt-webpack');
 	grunt.loadNpmTasks('grunt-mocha-test');
 	grunt.loadNpmTasks('grunt-karma');
 
 	grunt.initConfig({
+		bump: {
+			options: {
+				files: ['package.json'],
+				commit: true,
+				commitMessage: 'Regenerate and release version %VERSION%',
+				commitFiles: [], // see task release:git-add-generated
+				createTag: true,
+				tagName: '%VERSION%',
+				tagMessage: 'Version %VERSION%',
+				push: false,
+				prereleaseName: 'beta'
+			}
+		},
 		webpack: {
 			options: {
 				entry: './lib/index.js',
@@ -156,6 +170,61 @@ module.exports = function (grunt) {
 				'build',
 				`karma:${context}:delta-codec.js`,
 				`karma:${context}:delta-codec.min.js`
+			]);
+		}
+	);
+
+	function _exec(done, cmd, operationDescription) {
+		let execCallback = function(error, stdout, stderr) {
+			if (null === error) {
+				// Success
+				grunt.log.ok(operationDescription);
+				done();
+				return;
+			}
+	
+			// Failure
+			grunt.log.error('Failed to ' + operationDescription + ':\n' + error);
+			grunt.log.writeln('\n\nexec stdout:\n' + stdout);
+			grunt.log.writeln('\n\nexec stderr:\n' + stderr);
+			done(false);	
+		};
+
+		grunt.log.writeln(operationDescription + '...');
+		require('child_process').exec(cmd, execCallback);
+	}
+
+	/**
+	 * We need this task because...
+	 * 
+	 * grunt-bump's bump-commit fails if commitFiles are not in the root - i.e.:
+	 *   Running "bump::commit-only" (bump) task
+	 *   Fatal error: Can not create the commit:
+     *   error: pathspec 'dist/delta-codec.js' did not match any file(s) known to git
+     *   error: pathspec 'dist/delta-codec.min.js' did not match any file(s) known to git
+	 */
+	grunt.registerTask('release:git-add-generated',
+		'Adds generated files to the git staging area', function() {
+			var generatedFiles = [
+				'package.json',
+				'dist/delta-codec.js',
+				'dist/delta-codec.min.js'
+			];
+
+			var cmd = 'git add -A ' + generatedFiles.join(' ');
+
+			_exec(this.async(), cmd,  'Add generated files to Git staging area');
+		}
+	);
+
+	grunt.registerTask('release',
+		'Increments the version, regenerates from source (build / bundle), then makes a tagged commit. Run as "grunt release:type", where "type" is "major", "minor", "patch", "prepatch", etc.)',
+		versionType => {
+			grunt.task.run([
+				'bump-only:' + versionType,
+				'build',
+				'release:git-add-generated',
+				'bump-commit'
 			]);
 		}
 	);

@@ -30,6 +30,7 @@
     "chai": "^4.2.0",
     "core-js": "^3.6.5",
     "grunt": "^1.1.0",
+    "grunt-bump": "^0.8.0",
     "grunt-karma": "^3.0.2",
     "grunt-mocha-test": "^0.13.3",
     "grunt-webpack": "^3.1.3",

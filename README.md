@@ -13,6 +13,16 @@ applications).
 Throughout this documentation, and within the code itself, we refer to a Vcdiff payload as a 'delta'.
 Elsewhere such delta payloads may be referred to as patches or diffs, but for consistency within this repository we stick to the terms 'delta' and 'deltas'.
 
+## Installation from npm for Node.js
+
+    npm install @ably/delta-codec
+
+and require as:
+
+```javascript
+var deltaCodec = require('@ably/delta-codec');
+```
+
 ## Basic Stream Decoder
 
 The `VcdiffDecoder` constructor provides the most basic entry point to the public API. It provides a stateful way of applying a stream of Vcdiff deltas, producing a new value after each delta has been applied to the previous value.
@@ -20,7 +30,7 @@ The `VcdiffDecoder` constructor provides the most basic entry point to the publi
 First provide the base value, upon which the first delta will be applied using the 'setBase' method:
 
 ```js
-let decoder = new VcdiffDecoder();
+let decoder = new deltaCodec.VcdiffDecoder();
 decoder.setBase(value);
 ```
 
@@ -180,3 +190,12 @@ Remote browser testing supported by
 [<img src="./resources/Browserstack-logo@2x.png" width="200px"></img>](https://www.browserstack.com/)
 
 for which you will need to configure environment variables for `BROWSERSTACK_USERNAME` and `BROWSERSTACK_ACCESSKEY`.
+
+## Release Procedure
+
+On the `master` branch:
+
+1. Increment the version, regenerate from source (a.k.a. build / bundle) and make a tagged commit which includes the built output from the `/dist` folder by running `npm run grunt -- release:patch` (or "major", "minor" or "prepatch" as appropriate - see [grunt-bump Usage Examples](https://github.com/vojtajina/grunt-bump#usage-examples))
+2. Release the tagged commit to Github using `git push origin master --follow-tags`
+3. Release to NPM using `npm publish . --access public`
+5. Visit [tags](https://github.com/ably/delta-codec-js/tags) and draft new release for the newly created tag
