@@ -194,6 +194,45 @@ module.exports = function (grunt) {
 		require('child_process').exec(cmd, execCallback);
 	}
 
+	grunt.registerTask('publish-cdn',
+		'Deploys to the Ably CDN. Requires infrastructure repository relative to here.',
+		function() {
+			let name = 'infrastructure';
+			let prefix = '../';
+
+			var infrastructurePath = '../infrastructure',
+					maxTraverseDepth = 3,
+					infrastructureFound;
+
+			let folderExists = function(relativePath) {
+				try {
+					let fileStat = fs.statSync(infrastructurePath);
+					if (fileStat.isDirectory()) {
+						return true;
+					}
+				} catch (e) { /* does not exist */ }
+			}
+
+			while (infrastructurePath.length <= name.length + (maxTraverseDepth * prefix.length)) {
+				grunt.verbose.writeln('Looking for infrastructure repo at: "' + infrastructurePath + "'.");
+				if (infrastructureFound = folderExists(infrastructurePath)) {
+					break;
+				} else {
+					infrastructurePath = prefix + infrastructurePath;
+				}
+			}
+			if (!infrastructureFound) {
+				grunt.fatal('Infrastructure repo could not be found in any parent folders up to a folder depth of ' + maxTraverseDepth + '.');
+			}
+			grunt.verbose.ok('Found infrastructure repo at: "' + infrastructurePath + '"');
+
+			var version = grunt.file.readJSON('package.json').version,
+					cmd = 'BUNDLE_GEMFILE="' + infrastructurePath + '/Gemfile" bundle exec ' + infrastructurePath + '/bin/ably-env deploy delta-codec --version ' + version;
+
+			_exec(this.async(), cmd,  'Publish version ' + version + ' to CDN');
+		}
+	);
+	
 	/**
 	 * We need this task because...
 	 * 
