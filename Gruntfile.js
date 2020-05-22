@@ -227,8 +227,8 @@ module.exports = function (grunt) {
 			}
 			grunt.verbose.ok('Found infrastructure repo at: "' + infrastructurePath + '"');
 
-			var version = grunt.file.readJSON('package.json').version,
-					cmd = 'BUNDLE_GEMFILE="' + infrastructurePath + '/Gemfile" bundle exec ' + infrastructurePath + '/bin/ably-env deploy delta-codec --version ' + version;
+			const version = grunt.file.readJSON('package.json').version;
+			const cmd = `cd ${infrastructurePath}; bundle exec ./bin/ably-env deploy delta-codec --version ${version}`;
 
 			_exec(this.async(), cmd,  'Publish version ' + version + ' to CDN');
 		}
