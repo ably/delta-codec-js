@@ -85,32 +85,40 @@ An `Error` is thrown if there is a mismatch.
 
 ## Example Use Cases
 
-### Text stream from Ably via SSE (enveloped)
+### Node.js: Text stream from Ably via SSE (enveloped)
 
 By default the event data received from Ably is enveloped in JSON format.
 We decode this data and inspect the Ably formatted message contents in order to establish whether the data in this message is an absolute value or a delta to be applied to the previously received value.
 
 ```js
-const url = 'https://realtime.ably.io/sse?v=1.1&key=' + API_KEY + '&channels=' + CHANNEL_NAME;
+const deltaCodec = require('@ably/delta-codec');
+const EventSource = require('eventsource');
+
+const prefix = '[?delta=vcdiff]';
+const url = `https://realtime.ably.io/event-stream?channels=${prefix}${CHANNEL_NAME}&v=1.2&key=${APP_KEY}`;
 const eventSource = new EventSource(url);
-const decoder = new DeltaCodec.VcdiffDecoder();
-eventSource.onmessage = (event) => {
-    var message = JSON.parse(event.data);
-    let stringData = message.data;
-    try {
-        if (message.extras.delta) {
-            stringData = decoder.applyBase64Delta(stringData).asUtf8String();
-        } else {
-            decoder.setBase(stringData);
-        }
-    } catch(e) {
-        console.log(e); // TODO: Handle error.
+const codec = new deltaCodec.CheckedVcdiffDecoder();
+eventSource.onmessage = function onEventSourceMessage(event) {
+  const message = JSON.parse(event.data);
+  let value;
+  const deltaExtras = (message.extras && message.extras.delta) ? message.extras.delta : null;
+  if (deltaExtras) {
+    if (deltaExtras.format !== 'vcdiff') {
+      throw new Error(`Delta format ${deltaExtras.format} not understood.`);
     }
-    console.log(data); // TODO: Process the received value.
+    value = codec.applyBase64Delta(message.data, message.id, deltaExtras.from).asUtf8String();
+  } else {
+    value = message.data;
+    codec.setBase(value, message.id);
+  }
+  console.log(`received: ${value}`);
+};
+eventSource.onerror = function onEventSourceError(event) {
+  console.log(`error: ${event.data}`);
 };
 ```
 
-### Text stream from Ably via SSE (not enveloped)
+### Node.js: Text stream from Ably via SSE (not enveloped)
 
 For this example we have subscribed to Ably as our event source and specified that we do not want the inbound event data to be JSON enveloped.
 Without envelopes the events will be smaller, taking up less transmission bandwidth, however this then means we need 'sniff' each inbound event's data to identify whether it is an absolute value or a delta to be applied to the previously received value.
@@ -118,45 +126,59 @@ Without envelopes the events will be smaller, taking up less transmission bandwi
 Absolute values are sent to us as strings, ready to use. Deltas are sent to us as Base64 encoded binary.
 
 ```js
-const url = 'https://realtime.ably.io/sse?v=1.1&key=' + API_KEY + '&channels=' + CHANNEL_NAME + '&enveloped=false';
+const deltaCodec = require('@ably/delta-codec');
+const EventSource = require('eventsource');
+
+const prefix = '[?delta=vcdiff]';
+const url = `https://realtime.ably.io/event-stream?channels=${prefix}${CHANNEL_NAME}&v=1.2&key=${APP_KEY}&enveloped=false`;
 const eventSource = new EventSource(url);
-const decoder = new DeltaCodec.VcdiffDecoder();
-eventSource.onmessage = (event) => {
-    let stringData = event.data;
-    try {
-        if (VcdiffDecoder.isBase64Delta(stringData)) {
-            stringData = decoder.applyBase64Delta(stringData).asUtf8String();
-        } else {
-            decoder.setBase(stringData);
-        }
-    } catch(e) {
-        console.log(e); // TODO: Handle error.
-    }
-    console.log(data); // TODO: Process the received value.
+const codec = new deltaCodec.VcdiffDecoder();
+eventSource.onmessage = function onEventSourceMessage(event) {
+  const stringData = event.data;
+  let value;
+  if (deltaCodec.VcdiffDecoder.isBase64Delta(stringData)) {
+    value = codec.applyBase64Delta(stringData).asUtf8String();
+  } else {
+    value = stringData;
+    codec.setBase(value);
+  }
+  console.log(`received: ${value}`);
+};
+eventSource.onerror = function onEventSourceError(event) {
+  console.log(`error: ${event.data}`);
 };
 ```
 
-### Binary stream from Ably via MQTT
+### Node.js: Binary stream from Ably via MQTT
 
 The raw binary data received over MQTT has no encoding or other form of envelope encapsulating it.
 We need to 'sniff' each inbound payload to identify whether it is an absolute value or a delta to be applied to the previously received value.
+In this example we are transporting UTF-8 encoded strings.
 
 ```js
-const client = mqtt.connect(url, options);
-const channelName = 'sample-app-mqtt';
-const decoder = new VcdiffDecoder();
-client.on('message', (_, payload) => {
-    let data = payload;
-    try {
-        if (VcdiffDecoder.isDelta(data)) {
-            data = decoder.applyDelta(data).asUint8Array();
-        } else {
-            decoder.setBase(data);
-        }
-    } catch(e) {
-        console.log(e); // TODO: Handle error.
-    }
-    console.log(data); // TODO: Process the received value.
+const deltaCodec = require('@ably/delta-codec');
+const mqtt = require('mqtt');
+
+const brokerUrl = `mqtts://mqtt.ably.io`;
+const options = {
+  username: APP_KEY_NAME,
+  password: APP_KEY_SECRET,
+};
+const prefix = '[?delta=vcdiff]';
+const client = mqtt.connect(brokerUrl, options);
+client.on('connect', () => {
+  client.subscribe(`${prefix}${CHANNEL_NAME}`);
+});
+const codec = new deltaCodec.VcdiffDecoder();
+client.on('message', (topic, message) => {
+  let value;
+  if (deltaCodec.VcdiffDecoder.isDelta(message)) {
+    value = codec.applyDelta(message).asUtf8String();
+  } else {
+    codec.setBase(message);
+    value = message.toString();
+  }
+  console.log(`received: ${value}`);
 });
 ```
 
