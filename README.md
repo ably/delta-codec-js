@@ -19,7 +19,7 @@ Elsewhere such delta payloads may be referred to as patches or diffs, but for co
 
 and require as:
 
-```javascript
+```js
 var deltaCodec = require('@ably/delta-codec');
 ```
 
@@ -97,7 +97,7 @@ const EventSource = require('eventsource');
 const prefix = '[?delta=vcdiff]';
 const url = `https://realtime.ably.io/event-stream?channels=${prefix}${CHANNEL_NAME}&v=1.2&key=${APP_KEY}`;
 const eventSource = new EventSource(url);
-const codec = new deltaCodec.CheckedVcdiffDecoder();
+const decoder = new deltaCodec.CheckedVcdiffDecoder();
 eventSource.onmessage = function onEventSourceMessage(event) {
   const message = JSON.parse(event.data);
   let value;
@@ -106,10 +106,10 @@ eventSource.onmessage = function onEventSourceMessage(event) {
     if (deltaExtras.format !== 'vcdiff') {
       throw new Error(`Delta format ${deltaExtras.format} not understood.`);
     }
-    value = codec.applyBase64Delta(message.data, message.id, deltaExtras.from).asUtf8String();
+    value = decoder.applyBase64Delta(message.data, message.id, deltaExtras.from).asUtf8String();
   } else {
     value = message.data;
-    codec.setBase(value, message.id);
+    decoder.setBase(value, message.id);
   }
   console.log(`received: ${value}`);
 };
@@ -132,15 +132,15 @@ const EventSource = require('eventsource');
 const prefix = '[?delta=vcdiff]';
 const url = `https://realtime.ably.io/event-stream?channels=${prefix}${CHANNEL_NAME}&v=1.2&key=${APP_KEY}&enveloped=false`;
 const eventSource = new EventSource(url);
-const codec = new deltaCodec.VcdiffDecoder();
+const decoder = new deltaCodec.VcdiffDecoder();
 eventSource.onmessage = function onEventSourceMessage(event) {
   const stringData = event.data;
   let value;
   if (deltaCodec.VcdiffDecoder.isBase64Delta(stringData)) {
-    value = codec.applyBase64Delta(stringData).asUtf8String();
+    value = decoder.applyBase64Delta(stringData).asUtf8String();
   } else {
     value = stringData;
-    codec.setBase(value);
+    decoder.setBase(value);
   }
   console.log(`received: ${value}`);
 };
@@ -169,13 +169,13 @@ const client = mqtt.connect(brokerUrl, options);
 client.on('connect', () => {
   client.subscribe(`${prefix}${CHANNEL_NAME}`);
 });
-const codec = new deltaCodec.VcdiffDecoder();
+const decoder = new deltaCodec.VcdiffDecoder();
 client.on('message', (topic, message) => {
   let value;
   if (deltaCodec.VcdiffDecoder.isDelta(message)) {
-    value = codec.applyDelta(message).asUtf8String();
+    value = decoder.applyDelta(message).asUtf8String();
   } else {
-    codec.setBase(message);
+    decoder.setBase(message);
     value = message.toString();
   }
   console.log(`received: ${value}`);
