@@ -24,6 +24,24 @@ and require as:
 var deltaCodec = require('@ably/delta-codec');
 ```
 
+## Script include for Web Browsers
+
+Include the library in your HTML from our CDN:
+
+```html
+<script src="https://cdn.ably.io/lib/delta-codec.min-1.js"></script>
+```
+
+We follow [Semantic Versioning](http://semver.org/). To lock into a major or minor version of the client library, you can specify a specific version number - for example:
+
+* `https://cdn.ably.io/lib/delta-codec.min-1.js` for latest `1.*` version
+* `https://cdn.ably.io/lib/delta-codec.min-1.0.js` for latest `v1.0.*` version
+* `https://cdn.ably.io/lib/delta-codec.min-1.0.2.js` for version `1.0.2` explicitly
+
+You can load the non-minified version by omitting `min-` from the URL, for example `https://cdn.ably.io/lib/delta-codec-1.js`.
+
+See [tagged releases](https://github.com/ably/delta-codec-js/releases) for available versions.
+
 ## Basic Stream Decoder
 
 The `VcdiffDecoder` constructor provides the most basic entry point to the public API. It provides a stateful way of applying a stream of Vcdiff deltas, producing a new value after each delta has been applied to the previous value.
