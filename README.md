@@ -1,6 +1,7 @@
 # Vcdiff Codec Library for JavaScript
 
 [![Build Status](https://travis-ci.org/ably/delta-codec-js.svg?branch=master)](https://travis-ci.org/ably/delta-codec-js)
+[![npm version](https://badge.fury.io/js/%40ably%2Fdelta-codec.svg)](https://badge.fury.io/js/%40ably%2Fvcdiff-decoder)
 
 A Vcdiff codec library supporting the Vcdiff delta format, as defined by
 [RFC 3284](https://tools.ietf.org/html/rfc3284).
