@@ -5,14 +5,31 @@ on:
       - main
 
 jobs:
-  test:
+  test-browser:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
       - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
           node-version: 16.x
       - run: npm ci
-      - run: npm run test
-        env:
-          CI: true
+      - run: apt update
+      - run: apt install -y libgtk-3-0 libasound2 libdbus-glib-1-2 libx11-xcb1
+      - uses: browser-actions/setup-firefox@latest
+      - name: Run headless test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:browser
+  test-node:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - run: npm ci
+      - run: npm run test:node
