@@ -5,7 +5,9 @@
   "main": "lib/index.js",
   "scripts": {
     "grunt": "grunt",
-    "test": "grunt test:all"
+    "test": "grunt test:all",
+    "test:browser": "grunt test:browser:local",
+    "test:node": "grunt test:node"
   },
   "repository": "ably/delta-codec-js",
   "author": "Ably Real-time Ltd <support@ably.io>",
